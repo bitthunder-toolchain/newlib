@@ -381,8 +381,9 @@ case "${host}" in
 	posix_dir=posix
 	unix_dir=unix
 	;;
-  *-*-bt-*)
+  *-*-bt*)
 	sys_dir=bt
+	syscalls_dir=syscalls
 	;;
   a29k-*-*)
 	sys_dir=a29khif
