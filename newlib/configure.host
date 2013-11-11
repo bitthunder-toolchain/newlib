@@ -381,6 +381,9 @@ case "${host}" in
 	posix_dir=posix
 	unix_dir=unix
 	;;
+  *-*-bt-*)
+	sys_dir=bt
+	;;
   a29k-*-*)
 	sys_dir=a29khif
 	signal_dir=
