@@ -22,21 +22,27 @@ void _exit() {
 
 int _open_r(struct _reent *r, const char *name, int flags) {
 
-	TP("(%s, %08x);", name, flags);
-
 	BT_ERROR Error = 0;
-	BT_HANDLE hFile = BT_Open(name, "rb", &Error);
 
-	if(!hFile) {
-		TP("(): Error opening file.");
+	BT_s32 fd = BT_AllocFileDescriptor();
+	if(fd < 0) {
+		TP("(%s, %08x) : %d [Could not allocate file descriptor]", name, flags, -1);
 		return -1;
 	}
 
-	TP("(): Success opening file %p.", hFile);
+	TP("(%s, %08x) : %d", name, flags, fd);
 
-	BT_SetFileDescriptor(3, hFile);
 
-	return 3;
+	BT_HANDLE hFile = BT_Open(name, "rb", &Error);
+	if(!hFile) {
+		TP("(): Error opening file.");
+		BT_FreeFileDescriptor(fd);
+		return -1;
+	}
+
+	BT_SetFileDescriptor(fd, hFile);
+
+	return (int) fd;
 }
 
 int _close_r(struct _reent *r, int file) {
@@ -48,8 +54,7 @@ int _close_r(struct _reent *r, int file) {
 
 	BT_CloseHandle(hFile);
 	BT_SetFileDescriptor(file, NULL);
-
-	TP("(): succeeded");
+	BT_FreeFileDescriptor(file);
 
 	return 0;
 }
@@ -155,7 +160,7 @@ int _gettimeofday_r(struct _reent *r, struct timeval *p, struct timezone *z) {
 
 void *_malloc_r(struct _reent *r, size_t size) {
 	void *new = BT_kMalloc(size);
-	TP("(%d) : %p;", size, new);	
+	TP("(%d) : %p;", size, new);
 	return new;
 }
 
