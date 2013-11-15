@@ -7,23 +7,11 @@
 typedef void *				BT_HANDLE;
 
 typedef uint32_t			BT_u32;
+typedef int32_t 			BT_s32;
 
 typedef char				BT_i8;
 
 typedef BT_u32				BT_ERROR;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
