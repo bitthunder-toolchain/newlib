@@ -177,9 +177,12 @@ void *_realloc_r(struct _reent *r, void *ptr, size_t size) {
 	return new;
 }
 
-void *_calloc_r(struct _reent *r, size_t size) {
-	TP("(%d);", size);
-	void *new = BT_kMalloc(size);
-	memset(new, 0, size);
+void *_calloc_r(struct _reent *r, size_t nmemb, size_t size) {
+	void *new = BT_kMalloc(size * nmemb);
+	TP("(%d); : %p", size, new);
+	if(!new) {
+		return new;
+	}
+	memset(new, 0, size * nmemb);
 	return new;
 }
