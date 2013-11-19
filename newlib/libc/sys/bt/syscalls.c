@@ -131,6 +131,22 @@ int _link_r(struct _reent *r, char *old, char *new) {
 }
 
 int _lseek_r(struct _reent *r, int file, int ptr, int dir) {
+
+	BT_ERROR Error = 0;
+
+	TP("(%d, %d, %d);", file, ptr, dir);
+
+	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
+
+	Error = 0;
+
+	TP("(): Seek handle %p", hFile);
+
+	Error = BT_Seek(hFile, ptr, dir);
+	if(!Error) {
+		return 0;
+	}
+
 	return -1;
 }
 
