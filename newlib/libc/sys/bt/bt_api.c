@@ -59,3 +59,13 @@ BT_ERROR BT_ThreadSleep(BT_u32 ticks) {
 	__asm ("svc 3");
 #endif
 }
+
+void *BT_GetThreadTag(void) WEAK;
+void *BT_GetThreadTag(void) {
+	return NULL;
+}
+
+void BT_SetThreadTag(void *tag) WEAK;
+void BT_SetThreadTag(void *tag) {
+	return;
+}

@@ -134,6 +134,10 @@
 #define __ATTRIBUTE_IMPURE_PTR__ __attribute__((__section__(".sdata")))
 #endif
 
+#if defined(__bt__) || defined(__bitthunder__)
+#define __DYNAMIC_REENT__
+#endif
+
 #ifdef __xstormy16__
 #define __SMALL_BITFIELDS
 #undef INT_MAX
