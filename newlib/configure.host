@@ -369,6 +369,10 @@ case "${host}" in
 	sys_dir=bt
 	syscalls_dir=syscalls
 	;;
+  *-*-bitthunder*)
+	sys_dir=bitthunder
+	syscalls_dir=syscalls
+	;;
   a29k-*-*)
 	sys_dir=a29khif
 	signal_dir=
@@ -559,6 +563,9 @@ case "${host}" in
 # BitThunder Configuration
   *-*-bt*)
 	newlib_cflags="${newlib_cflags} -DMALLOC_PROVIDED -DREENTRANT_SYSCALLS_PROVIDED"
+	;;
+  *-*-bitthunder*)
+	newlib_cflags="${newlib_cflags} -DREENTRANT_SYSCALLS_PROVIDED"
 	;;
 # VxWorks supplies its own version of malloc, and the newlib one
 # doesn't work because VxWorks does not have sbrk.
