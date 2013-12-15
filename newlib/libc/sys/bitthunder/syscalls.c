@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include "bt_types.h"
+#include "bt_api.h"
 
 //#define BT_LIBC_TRACE
 
@@ -20,23 +21,68 @@ void _exit() {
 #define TP( s, args... )
 #endif
 
-int _open_r(struct _reent *r, const char *name, int flags) {
+struct flag_mask {
+	BT_u32 flag;
+	BT_u32 mask;
+};
 
-	TP("(%s, %08x);", name, flags);
+#define FLAGS_DEFAULT BT_FS_MODE_READ			// In c flags = 0 mean read only.
+
+static const struct flag_mask libc_to_bt_flags[] = {
+	{BT_FS_MODE_WRITE, 						~(BT_FS_MODE_READ)},		// O_RDONLY
+	{BT_FS_MODE_READ | BT_FS_MODE_WRITE, 	0},							// O_RDWR
+	{0, 0},
+	{BT_FS_MODE_APPEND, 					0},							// O_APPEND
+	{0, 0},																// _FMARK
+	{0, 0},																// _FDEFER
+	{0, 0},																// _FASYNC
+	{0, 0},																// _FSHLOCK
+	{0, 0},																// _FEXLOCK
+	{BT_FS_MODE_CREATE,						0},							// O_CREAT
+	{BT_FS_MODE_TRUNCATE, 					0},							// O_TRUNC
+};
+
+static BT_u32 convert_flags(int flags) {
+	BT_u32 i;
+	BT_u32 bt_flags = FLAGS_DEFAULT;
+
+	for(i = 0; i < sizeof(libc_to_bt_flags)/sizeof(struct flag_mask); i++) {
+		if((1 << i) & flags) {
+			if(libc_to_bt_flags[i].mask) {
+				bt_flags &= libc_to_bt_flags[i].mask;
+			}
+
+			bt_flags |= libc_to_bt_flags[i].flag;
+		}
+	}
+
+	return bt_flags;
+}
+
+int _open_r(struct _reent *r, const char *name, int flags, int mode) {
 
 	BT_ERROR Error = 0;
-	BT_HANDLE hFile = BT_Open(name, "rb", &Error);
 
-	if(!hFile) {
-		TP("(): Error opening file.");
+	BT_s32 fd = BT_AllocFileDescriptor();
+	if(fd < 0) {
+		TP("(%s, %08x) : %d [Could not allocate file descriptor]", name, flags, -1);
 		return -1;
 	}
 
-	TP("(): Success opening file %p.", hFile);
+	TP("(%s, %08x) : %d", name, flags, fd);
 
-	BT_SetFileDescriptor(3, hFile);
+	BT_u32 bt_flags = convert_flags(flags);
 
-	return 3;
+	BT_HANDLE hFile = BT_Open(name, bt_flags, &Error);
+	if(!hFile) {
+		TP("(): Error opening file.");
+		BT_FreeFileDescriptor(fd);
+		return -1;
+	}
+
+	BT_SetFileDescriptor(fd, hFile);
+
+	return (int) fd;
 }
 
 int _close_r(struct _reent *r, int file) {
@@ -48,8 +94,7 @@ int _close_r(struct _reent *r, int file) {
 
 	BT_CloseHandle(hFile);
 	BT_SetFileDescriptor(file, NULL);
-
-	TP("(): succeeded");
+	BT_FreeFileDescriptor(file);
 
 	return 0;
 }
@@ -86,6 +131,22 @@ int _link_r(struct _reent *r, char *old, char *new) {
 }
 
 int _lseek_r(struct _reent *r, int file, int ptr, int dir) {
+
+	BT_ERROR Error = 0;
+
+	TP("(%d, %d, %d);", file, ptr, dir);
+
+	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
+
+	Error = 0;
+
+	TP("(): Seek handle %p", hFile);
+
+	Error = BT_Seek(hFile, ptr, dir);
+	if(!Error) {
+		return 0;
+	}
+
 	return -1;
 }
 
@@ -155,7 +216,7 @@ int _gettimeofday_r(struct _reent *r, struct timeval *p, struct timezone *z) {
 
 void *_malloc_r(struct _reent *r, size_t size) {
 	void *new = BT_kMalloc(size);
-	TP("(%d) : %p;", size, new);	
+	TP("(%d) : %p;", size, new);
 	return new;
 }
 
@@ -172,9 +233,12 @@ void *_realloc_r(struct _reent *r, void *ptr, size_t size) {
 	return new;
 }
 
-void *_calloc_r(struct _reent *r, size_t size) {
-	TP("(%d);", size);
-	void *new = BT_kMalloc(size);
-	memset(new, 0, size);
+void *_calloc_r(struct _reent *r, size_t nmemb, size_t size) {
+	void *new = BT_kMalloc(size * nmemb);
+	TP("(%d); : %p", size, new);
+	if(!new) {
+		return new;
+	}
+	memset(new, 0, size * nmemb);
 	return new;
 }
