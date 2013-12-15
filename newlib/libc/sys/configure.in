@@ -37,6 +37,7 @@ if test -n "${sys_dir}"; then
 	rdos) AC_CONFIG_SUBDIRS(rdos) ;;
 	rtems) AC_CONFIG_SUBDIRS(rtems) ;;
 	bt ) AC_CONFIG_SUBDIRS(bt) ;;
+	bitthunder ) AC_CONFIG_SUBDIRS(bitthunder) ;;
 	sh) AC_CONFIG_SUBDIRS(sh) ;;
 	sparc64) AC_CONFIG_SUBDIRS(sparc64) ;;
 	sun4) AC_CONFIG_SUBDIRS(sun4) ;;

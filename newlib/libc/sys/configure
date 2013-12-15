@@ -820,6 +820,7 @@ netware
 rdos
 rtems
 bt
+bitthunder
 sh
 sparc64
 sun4
@@ -11850,6 +11851,8 @@ subdirs="$subdirs a29khif"
 	rtems) subdirs="$subdirs rtems"
  ;;
 	bt ) subdirs="$subdirs bt"
+ ;;
+	bitthunder ) subdirs="$subdirs bitthunder"
  ;;
 	sh) subdirs="$subdirs sh"
  ;;
