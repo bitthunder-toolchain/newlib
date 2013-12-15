@@ -242,3 +242,14 @@ void *_calloc_r(struct _reent *r, size_t nmemb, size_t size) {
 	memset(new, 0, size * nmemb);
 	return new;
 }
+
+struct _reent *__getreent(void) {
+	struct _reent *tag = BT_GetThreadTag();
+	if(!tag) {
+		tag = BT_kMalloc(sizeof(struct _reent));
+		_REENT_INIT_PTR(tag);
+		BT_SetThreadTag(tag);
+	}
+
+	return tag;
+}
