@@ -6,8 +6,7 @@
 #include <sys/errno.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include "bt_types.h"
-#include "bt_api.h"
+#include "include/bitthunder.h"
 
 //#define BT_LIBC_TRACE
 
@@ -189,10 +188,10 @@ int _write_r(struct _reent *r, int file, char *ptr, int len) {
 	return -1;
 }
 
-/*caddr_t _sbrk(int incr) {
-	BT_kPrint("newlib: _sbrk(%08x);", incr);
+caddr_t _sbrk_r(struct _reent *r, int incr) {
+	TP("(%d);", incr);
 	return 0;
-	}*/
+}
 
 int _stat_r(struct _reent *r, const char *file, struct stat *st) {
 	return -1;
@@ -214,6 +213,7 @@ int _gettimeofday_r(struct _reent *r, struct timeval *p, struct timezone *z) {
 	return -1;
 }
 
+#ifdef MALLOC_PROVIDED
 void *_malloc_r(struct _reent *r, size_t size) {
 	void *new = BT_kMalloc(size);
 	TP("(%d) : %p;", size, new);
@@ -241,4 +241,9 @@ void *_calloc_r(struct _reent *r, size_t nmemb, size_t size) {
 	}
 	memset(new, 0, size * nmemb);
 	return new;
+}
+#endif
+
+struct _reent *__getreent(void) {
+	return 0xDEADBEEF;
 }
