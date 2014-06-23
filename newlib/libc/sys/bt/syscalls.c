@@ -198,6 +198,10 @@ int _stat_r(struct _reent *r, const char *file, struct stat *st) {
 	return -1;
 }
 
+int stat(const char *path, struct stat *st) {
+	return -1;
+}
+
 clock_t _times_r(struct _reent *r, struct tms *buf) {
 	return 0;
 }
@@ -269,4 +273,9 @@ struct _reent *__getreent(void) {
 	}
 
 	return tag;
+}
+
+
+int isatty(int fd) {
+	return -1;
 }
