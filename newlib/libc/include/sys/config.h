@@ -135,7 +135,7 @@
 #endif
 
 #if defined(__bt__) || defined(__bitthunder__)
-#define __DYNAMIC_REENT__
+//#define __DYNAMIC_REENT__
 #endif
 
 #ifdef __xstormy16__
