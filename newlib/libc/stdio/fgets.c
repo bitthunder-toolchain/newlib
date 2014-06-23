@@ -107,7 +107,7 @@ _DEFUN(_fgets_r, (ptr, buf, n, fp),
       while (--n > 0 && (c = __sgetc_r (ptr, fp)) != EOF)
 	{
 	  *s++ = c;
-	  if (c == '\n')
+	  if (c == '\n' || c == '\r')
 	    break;
 	}
       if (c == EOF && s == buf)
@@ -152,6 +152,9 @@ _DEFUN(_fgets_r, (ptr, buf, n, fp),
       if (len > n)
 	len = n;
       t = (unsigned char *) memchr ((_PTR) p, '\n', len);
+	  if(!t) {
+		  t = (unsigned char *) memchr((_PTR) p, '\r', len);
+	  }
       if (t != 0)
 	{
 	  len = ++t - p;
