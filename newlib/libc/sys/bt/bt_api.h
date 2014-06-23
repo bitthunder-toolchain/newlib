@@ -21,6 +21,9 @@ void BT_kFree(void *ptr);
 void BT_kPrint(const char *fmt, ...);
 
 
+BT_ERROR bt_gettimeofday(struct timeval *tv, struct timezone *tz);
+BT_ERROR bt_settimeofday(const struct timeval *tv, const struct timezone *tz);
+
 BT_s32 BT_AllocFileDescriptor();
 BT_ERROR BT_FreeFileDescriptor();
 BT_ERROR BT_SetFileDescriptor(BT_u32 n, BT_HANDLE h);

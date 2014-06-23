@@ -4,7 +4,7 @@
 #include <sys/fcntl.h>
 #include <sys/times.h>
 #include <sys/errno.h>
-#include <sys/time.h>
+#include <time.h>
 #include <stdio.h>
 #include "bt_types.h"
 #include "bt_api.h"
@@ -211,7 +211,24 @@ int _wait_r(struct _reent *r, int *status) {
 }
 
 int _gettimeofday_r(struct _reent *r, struct timeval *p, struct timezone *z) {
-	return -1;
+	bt_gettimeofday(p, z);
+	return 0;
+}
+
+int gettimeofday(struct timeval *p, struct timezone *z) {
+	bt_gettimeofday(p, z);
+
+	return 0;
+}
+
+int _settimeofday_r(struct _reent *r, struct timeval *p, struct timezone *z) {
+	bt_settimeofday(p, z);
+	return 0;
+}
+
+int settimeofday(struct timeval *p, struct timezone *z) {
+	bt_settimeofday(p, z);
+	return 0;	
 }
 
 void *_malloc_r(struct _reent *r, size_t size) {
