@@ -13,8 +13,9 @@
 #define BT_SYS_close	3
 #define BT_SYS_read		4
 #define BT_SYS_write	5
-#define BT_SYS_klog		6
-#define BT_SYS_sleep	7
-#define BT_SYS_gpioset	8
+#define BT_SYS_lseek	6
+#define BT_SYS_klog		7
+#define BT_SYS_sleep	8
+#define BT_SYS_gpioset	9
 
 #endif

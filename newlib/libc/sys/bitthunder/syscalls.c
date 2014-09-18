@@ -8,94 +8,16 @@
 #include <stdio.h>
 #include "include/bitthunder.h"
 
-//#define BT_LIBC_TRACE
-
 void _exit() {
 	while(1);
 }
 
-#ifdef BT_LIBC_TRACE
-#define TP( s, args... )	BT_kPrint("newlib: %s" s, __func__, ## args)
-#else
-#define TP( s, args... )
-#endif
-
-struct flag_mask {
-	BT_u32 flag;
-	BT_u32 mask;
-};
-
-#define FLAGS_DEFAULT BT_FS_MODE_READ			// In c flags = 0 mean read only.
-
-static const struct flag_mask libc_to_bt_flags[] = {
-	{BT_FS_MODE_WRITE, 						~(BT_FS_MODE_READ)},		// O_RDONLY
-	{BT_FS_MODE_READ | BT_FS_MODE_WRITE, 	0},							// O_RDWR
-	{0, 0},
-	{BT_FS_MODE_APPEND, 					0},							// O_APPEND
-	{0, 0},																// _FMARK
-	{0, 0},																// _FDEFER
-	{0, 0},																// _FASYNC
-	{0, 0},																// _FSHLOCK
-	{0, 0},																// _FEXLOCK
-	{BT_FS_MODE_CREATE,						0},							// O_CREAT
-	{BT_FS_MODE_TRUNCATE, 					0},							// O_TRUNC
-};
-
-static BT_u32 convert_flags(int flags) {
-	BT_u32 i;
-	BT_u32 bt_flags = FLAGS_DEFAULT;
-
-	for(i = 0; i < sizeof(libc_to_bt_flags)/sizeof(struct flag_mask); i++) {
-		if((1 << i) & flags) {
-			if(libc_to_bt_flags[i].mask) {
-				bt_flags &= libc_to_bt_flags[i].mask;
-			}
-
-			bt_flags |= libc_to_bt_flags[i].flag;
-		}
-	}
-
-	return bt_flags;
-}
-
 int _open_r(struct _reent *r, const char *name, int flags, int mode) {
-
-	BT_ERROR Error = 0;
-
-	BT_s32 fd = BT_AllocFileDescriptor();
-	if(fd < 0) {
-		TP("(%s, %08x) : %d [Could not allocate file descriptor]", name, flags, -1);
-		return -1;
-	}
-
-	TP("(%s, %08x) : %d", name, flags, fd);
-
-	BT_u32 bt_flags = convert_flags(flags);
-
-	BT_HANDLE hFile = BT_Open(name, bt_flags, &Error);
-	if(!hFile) {
-		TP("(): Error opening file.");
-		BT_FreeFileDescriptor(fd);
-		return -1;
-	}
-
-	BT_SetFileDescriptor(fd, hFile);
-
-	return (int) fd;
+	return bt_sys_open(name, flags, mode);
 }
 
 int _close_r(struct _reent *r, int file) {
-
-	TP("(%d);", file);
-
-	BT_ERROR Error = 0;
-	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
-
-	BT_CloseHandle(hFile);
-	BT_SetFileDescriptor(file, NULL);
-	BT_FreeFileDescriptor(file);
-
-	return 0;
+	return bt_sys_close(file);
 }
 
 char **environ; /* pointer to array of char * strings that define the current environment variables */
@@ -130,62 +52,15 @@ int _link_r(struct _reent *r, char *old, char *new) {
 }
 
 int _lseek_r(struct _reent *r, int file, int ptr, int dir) {
-
-	BT_ERROR Error = 0;
-
-	TP("(%d, %d, %d);", file, ptr, dir);
-
-	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
-
-	Error = 0;
-
-	TP("(): Seek handle %p", hFile);
-
-	Error = BT_Seek(hFile, ptr, dir);
-	if(!Error) {
-		return 0;
-	}
-
-	return -1;
+	return bt_sys_lseek(file, ptr, dir);
 }
 
 int _read_r(struct _reent *r, int file, char *ptr, int len) {
-
-	BT_ERROR Error = 0;
-
-	TP("(%d, %p, %d);", file, ptr, len);
-
-	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
-
-	Error = 0;
-
-	TP("(): Read handle %p", hFile);
-
-	BT_u32 read = BT_Read(hFile, 0, len, ptr, &Error);
-	if(!Error) {
-		return read;
-	}
-
-	return -1;
+	return bt_sys_read(file, ptr, len);
 }
 
-int _write_r(struct _reent *r, int file, char *ptr, int len) {
-	BT_ERROR Error = 0;
-
-	TP("(%d, %p, %d)", file, ptr, len);
-
-	BT_HANDLE hFile = BT_GetFileDescriptor(file, &Error);
-
-	Error = 0;
-
-	TP("(): Write handle %p", hFile);
-
-	BT_u32 written = BT_Write(hFile, 0, len, ptr, &Error);
-	if(!Error) {
-		return written;
-	}
-
-	return -1;
+int _write_r(struct _reent *r, int file, const char *ptr, int len) {
+	return bt_sys_write(file, ptr, len);
 }
 
 caddr_t _sbrk_r(struct _reent *r, int incr) {
